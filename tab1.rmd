@@ -1,7 +1,5 @@
 ---
-title: "tab1"
-author: "Paola Bojorquez-Ramirez"
-date: "12/2/2022"
+title: "Figures/Tables | References"
 output: html_document
 ---
 
@@ -9,10 +7,254 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Figures and Tables
 
-This is tab 1
-```{r}
-2+5
+```{r, include= FALSE} 
+#install.packages("kableExtra")
+#load libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(boot) 
+
+
+#install.packages("table1")
+require(table1)
+
+library(devtools)
+#install_github("emwozniak/Table1")
+#library(Table1)
+
+
+#import MSF_Dataset_Complete_450 csv file to subset dataset to only the variables needed for this project 
+#main exposure of interest: gestational diabetes 
+#main outcome of interest: preterm deliveries
+#potential confounders I will adjust for
+#other interesting/relevant tvariables for exploratory analyses
+
+msf_original <- read.csv("MSF_Dataset_Complete_450.csv")
+#there are 455 observations and 325 variables in the original complete dataset
+
+
+#Clean the csv file as needed as needed
+#display all variables for the first 6 rows of the dataset
+#head(msf_original)
+
+#subset dataset to the following variables: Mother_UID, Age_of_Mother, BMI, Yrs_of_Marriage, Fertility_Treatment, Education, Family_Income, and Preterm
+
+#notice the file is a bit messy and requires some cleaning
+
+#Also NOTICE that hypertension and gestational diabetes are not identifiable in the 'Complete' dataset. I was unable to find a codesheet that tells me which colums belong to these variables. Since gestational dibaetes is the main exposure I will need to retrieve this variable from a separate csv file (along with hypertesnion) and merge both csv files together. I will do this after cleaning the 'complete' dataset 
+
+#some of the variables span multiple columns to represent different time phases. None of the aforementioned variables I will use in this project span more than one column. I will now clean the dataset as needed to create a wide format dataset with each row representing a single mother and each column representing a single variable. I will ultimately create a tidyverse dataframe to use tidyverse functions
+
+
+#create second dataset to clean
+msf_2 <- msf_original
+
+#rename the column 'X' to 'Mother_UID'
+colnames(msf_2)[colnames(msf_2) == "X"] = "Mother_UID"
+
+#remame the 'X.76' column to 'Preterm'
+colnames(msf_2)[colnames(msf_2) == "X.76"] = "Preterm"
+#table(msf_2$Preterm)
+
+#remame the 'Fertility_Treatment' column to 'Infertility_Treatment'
+colnames(msf_2)[colnames(msf_2) == "Fertility_Treatment"] = "Infertility_Treatment"
+#table(msf_2$Infertility_Treatment)
+
+
+#subset to the following variables only: Mother_UID, Age_Of_Mother, BMI, Yrs_Of_Marriage, Fertility_Treatment, Education, Cigarette, Alcohol, Health.Conscious, Family_Income, and Preterm
+myvars <- c("Mother_UID", "Preterm","Age_Of_Mother", "BMI", "Yrs_Of_Marriage", "Infertility_Treatment", "Education", "Family_Income")
+msf_2 <- msf_2[myvars]
+
+#Remove the first 5 rows
+msf_2 <- msf_2[-c(1:5),]
+#the dataset now has 450 observations and 8 variables. WOOOOHOOOO
 ```
 
+```{r, include= FALSE}
+#NOW I will load in the MSF_Physical_and_health_Fetaures_450 dataset to retrieve the gestational diabetes and hypertension variables
+msf_diab_hyp <- read.csv("MSF_Physical_and_health_Fetaures_450.csv")
+
+#create dataset to clean
+msf_3 <- msf_diab_hyp
+
+#rename the column 'X' to 'Mother_UID'
+colnames(msf_3)[colnames(msf_3) == "X"] = "Mother_UID"
+
+#rename the column 'X.2' to 'Hypertension'
+colnames(msf_3)[colnames(msf_3) == "X.2"] = "Hypertension"
+
+#rename the column 'X.3' to 'Gest_Diabetes'
+colnames(msf_3)[colnames(msf_3) == "X.3"] = "Gest_Diabetes"
+
+#subset to the following variables only: Mother_UID, Gest_Diabetes, Hypertension 
+myvars2 <- c("Mother_UID", "Gest_Diabetes","Hypertension")
+msf_3 <- msf_3[myvars2]
+
+#Remove the first 5 rows
+msf_3 <- msf_3[-c(1:5),]
+#the dataset now has 450 observations and 3 variables. WOOOOHOOOO
+
+#Merge msf_2 and msf_3 datasets which are both now in tidy format by 'Mother_UID'
+msf_4_final <- full_join(msf_2, msf_3, by = "Mother_UID")
+# the final dataset that will be used for analyses has 450 observations and 10 variables
+```
+
+```{r, include= FALSE}
+#Show relevant parts of the datasets before and after data cleaning
+#before
+# head(msf_original)
+# head(msf_diab_hyp)
+# #after
+# head(msf_4_final)
+
+
+# Stacked Bar plot of Preterm (binary;outcome) vs Gestational Diabetes (binary;exposure)
+#quick look at both vars
+#table(msf_4_final$Preterm)
+#81 women had a preterm birth; 369 women did not have a preterm birth
+#table(msf_4_final$Gest_Diabetes)
+#11 women had gestational diabetes; 439 women did not have gestational diabetes
+
+#Relabel the Gestational Diabetes, Preterm, Hypertension, and infertility treatment Vars
+msf_4_final$Gest_Diabetes <- ifelse(msf_4_final$Gest_Diabetes=="1", "Yes", "No")
+#check
+#table(msf_4_final$Gest_Diabetes)
+msf_4_final$Preterm <- ifelse(msf_4_final$Preterm=="1", "Yes", "No")
+#table(msf_4_final$Preterm)
+msf_4_final$Hypertension <- ifelse(msf_4_final$Hypertension=="1", "Yes", "No")
+#table(msf_4_final$Hypertension)
+msf_4_final$Infertility_Treatment <- ifelse(msf_4_final$Infertility_Treatment=="1", "Yes", "No")
+table(msf_4_final$Infertility_Treatment)
+
+
+#change the order of levels so that the “yes” category comes first
+#Gestational diabetes
+table(msf_4_final$Gest_Diabetes)
+levels(as.factor(msf_4_final$Gest_Diabetes))
+
+msf_4_final$Gest_Diabetes <- factor(msf_4_final$Gest_Diabetes, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Gest_Diabetes))
+
+#preterm
+table(msf_4_final$Preterm)
+levels(as.factor(msf_4_final$Preterm))
+
+msf_4_final$Preterm <- factor(msf_4_final$Preterm, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Preterm))
+
+#hypertension
+table(msf_4_final$Hypertension)
+levels(as.factor(msf_4_final$Hypertension))
+
+msf_4_final$Hypertension <- factor(msf_4_final$Hypertension, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Hypertension))
+
+#infertility Treatment
+table(msf_4_final$Infertility_Treatment)
+levels(as.factor(msf_4_final$Infertility_Treatment))
+
+msf_4_final$Infertility_Treatment <- factor(msf_4_final$Infertility_Treatment, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Infertility_Treatment))
+
+
+# Demographics table; Baseline characteristics of mothers in the analyses
+
+# Stratify by gestational diabetes in the columns and show the data for mother's age (continuous), education, family income, BMI (cont), years of marriage (cont), hypertension, preterm  
+# Please note that the variables for family income and education are categorized as discrete categories but there is not a online codebookto interpret what each category represents : (  These are key demographic variables so I will include them in Table 1 and adjust the logistic reg using the variables as they are for the purposes of this assignment
+
+#turn categorical variables into factor type for table1 function
+msf_4_final$Education <- as.factor(msf_4_final$Education)
+msf_4_final$Family_Income <- as.factor(msf_4_final$Family_Income)
+msf_4_final$Hypertension <- as.factor(msf_4_final$Hypertension)
+msf_4_final$Preterm <- as.factor(msf_4_final$Preterm)
+msf_4_final$Infertility_Treatment <- as.factor(msf_4_final$Infertility_Treatment)
+
+
+```
+
+```{r, echo=FALSE}
+table1(~Age_Of_Mother + Education + Family_Income + Yrs_Of_Marriage + BMI + Hypertension + Preterm + Infertility_Treatment|Gest_Diabetes, data=msf_4_final,
+       overall=F, caption= "Table 1. Baseline Characteristics of Mothers in the MSF Dataset (2018-21) Stratified by Gestational Diabetes") 
+#information on what categories for Education and Family Income represent were not available online.
+
+
+stacked_barplot <-ggplot(msf_4_final, aes(x = Gest_Diabetes , fill = Preterm))+
+  geom_bar()+
+  xlab("Gestational Diabetes")+
+  ylab("Count") +
+  ggtitle("Figure 1. Preterm Deliveries By Gestational Diabetes in the MSF Dataset") +
+  theme_classic()
+stacked_barplot
+```
+
+```{r, echo=FALSE}
+#Association tests
+#Preterm vs gestational diabetes 2x2 Contingency table 
+table1(~Preterm |Gest_Diabetes, data=msf_4_final,
+       overall=F, caption= "Table 2. Preterm Deliveries vs Gestational Diabetes with column percentages")
+
+table2 <- table(msf_4_final$Preterm, msf_4_final$Gest_Diabetes)
+mosaicplot(table2, color = c("pink", "light green"), xlab ="Preterm Deliveries", ylab = "Gestational Diabetes", main = "Figure 2. Mosaic Plot for Gestational Diabetes vs Preterm Deliveries")
+```
+
+```{r, include=FALSE}
+# The Chi-square test requires that all cell expected values be at least 5
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met 
+chisq.test(table2)$expected
+#Chi-square test is not appropriate for this association
+
+#Run Fisher's Exact Test
+fisher.test(msf_4_final$Gest_Diabetes, msf_4_final$Preterm)
+```
+
+```{r, echo=FALSE}
+#Preterm vs Infertility Treatment 2x2 Contingency table 
+table1(~Preterm |Infertility_Treatment, data=msf_4_final,
+       overall=F, caption= "Table 3. Preterm Deliveries vs Infertility Treatment with column percentages") 
+table3 <- table(msf_4_final$Preterm, msf_4_final$Infertility_Treatment)
+mosaicplot(table3, color = c("pink", "light yellow"), xlab ="Preterm Deliveries", ylab = "Infertility Treatment", main = "Figure 3. Mosaic Plot for Infertility Treatment vs Preterm Deliveries")
+
+```
+
+```{r, include=FALSE}
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met
+chisq.test(table3)$expected
+#met
+
+#calculate OR and 95% CI using Fisher.test function
+fisher.test(msf_4_final$Infertility_Treatment, msf_4_final$Preterm)$estimate
+fisher.test(table3)
+
+#conduct chi-square test
+chisq.test(table3)
+```
+
+```{r, echo=FALSE}
+#Preterm vs Hypertension 2x2 Contingency table 
+table1(~Preterm |Hypertension, data=msf_4_final,
+       overall=F, caption= "Table 4. Preterm Deliveries vs Hypertension with column percentages") 
+
+table4 <- table(msf_4_final$Preterm, msf_4_final$Hypertension)
+mosaicplot(table4, color = c("pink", "lavender"), xlab ="Preterm Deliveries", ylab = "Hypertension", main = "Figure 4. Mosaic Plot for Hypertension vs Preterm Deliveries")
+```
+
+
+```{r, include=FALSE}
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met
+chisq.test(table4)$expected
+#not met
+
+#Run Fisher's Exact Test
+fisher.test(msf_4_final$Hypertension, msf_4_final$Preterm)
+
+```
+
+# References
+1.Himani Deshpande, Leena Ragha. (2021). Mother’s Significant Feature (MSF) Dataset. IEEE Dataport. https://dx.doi.org/10.21227/kq5k-b784
+
+2.India has 1/5th of the world’s preterm babies. (2019, June 13). Retrieved December 12, 2022, from Narayana Health Care website: https://www.narayanahealth.org/blog/india-has-1-5th-of-the-worlds-preterm-babies/
+
+3.Fan, Z., Yang, H., Gao, X., Lintu, H., & Sun, W. (2006). Pregnancy outcome in gestational diabetes. *International Journal of Gynecology & Obstetrics*, 94(1), 12–16. https://doi.org/10.1016/j.ijgo.2006.03.021
