@@ -5,7 +5,7 @@ date: "12/16/2022"
 ---
 # Introduction 
 
-Hello, here you will find my introduction, results, and conclusionfor my BST 260 project on this tab. Figures and references (without code) can be found in the second tab. 
+Hello, here you will find my introduction, results, and conclusion for my BST 260 project. Figures and references (without code) can be found in the second tab. 
 
 
 # Where is the data used for this project from?
