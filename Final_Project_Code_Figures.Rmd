@@ -1,0 +1,298 @@
+---
+title: "Final Project Code Figures"
+author: "Paola Bojorquez-Ramirez"
+date: "12/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+The Mother’s Significant Feature (MSF) dataset contains data collected from 450 mothers from the Mumbai metropolitan region in Maharashtra, India interviewed after childbirth between February 2018 to March 2021.^1^ It is composed of 130 variables (i.e. attributes) that cover a range of descriptive to health-related outcomes for mothers and fathers across 6 Excel spreadsheets. The dataset was designed to provide data for researchers to conduct analyses that will contribute to improved reproductive and health outcomes among mothers, fathers, and children. It consists of common factors and health outcomes experienced across the following three major reproductive phases relevant to this population: late adolescence, post-marriage, and during pregnancy. The 130 attributes were selected based on literature reviews and brainstorming sessions with gynecologists and pediatricians. They are organized into the following main five categories: physical, social, lifestyle, stress levels, and health outcomes. Each of the 450 mothers included in the dataset were assigned a unique ID number included in the “Mother_UID” variable which will be used to merge relevant csv files.
+
+Preterm deliveries are the leading cause of death in children under 5 years across the world, with approximately 20% of the 15 million babies born preterm globally occurring in India.^2^ Studies have shown that preterm delivery is less common among women with good glycemic control.^3^ Moreover, observational studies have corroborated that risks for preterm delivery are multifactorial and cannot be deduced to solely biological mechanisms. Given the inherent need to identify factors that may be associated with higher odds of preterm deliveries, the main objective of this project was to assess the association between preterm deliveries and gestational diabetes, infertility treatment, and hypertension during pregnancy. 
+
+I created a figure and table to illustrate my exploratory data analysis titled:
+
+* Figure 1. Preterm Deliveries By Gestational Diabetes in the MSF Dataset
+* Table 1. Baseline Characteristics of Mothers in the MSF Dataset (2018-21) Stratified by Gestational Diabetes
+
+All figures and tables will be described in the results section and can be found in the Appendix (along with code). 
+
+To assess whether there are significant associations between the respective binary variables, Fisher’s Exact and Chi-Square association tests were conducted along with odds ratios and confidence intervals. These tests were warranted because 1) each of the three respective pairs of associations were binary, 2) all 450 mothers in the dataset are independent observations, and 3) cells in the 2x2 contingency tables are mutually exclusive. The Chi-Square test of independence assumes that the expected values for each cell in 2x2 contingency tables are 5 or greater. This assumption was not met for 2 of the associations of interest. Despite the sum of the rows and columns not being fixed and following a hypergeometric distribution, a Fisher’s Exact test was performed because applying the approximation method from a Chi-squared test was not appropriate. Statistical theory states that for large enough 2x2 cellentries, the log of the odds ratio is approximately normal and a confidence interval can be constructed. Although the overall sample size of 450 is large, multiple cell values in the contingency table are smaller than 10 so asymptotics may not hold. Because of the small cell sizes, confidence intervals are expected to be wide.
+
+# Results
+
+Extensive data wrangling was necessary to conduct this analysis because the Mother's Significant Feature dataset was organized across Excel sheets. Moreover, in order to make my analyses simpler I narrowed the dataset from over 325 variables to 13. In order to merge csv files to have all the variables of interest in a single tidy data frame, two datasets were cleaned by renaming columns, removing noninformative rows, and subsetting to only relevant columns. The csv files were merged according to each unique mother’s ID included in every Excel sheet. I reached out to Luli who approved that these steps would be considered extensive wrangling. The first 6 rows using head() function for the ‘msf_original’ and ‘msf_diab_hyp’ datasets show relevant parts of the datasets that required cleaning. The ‘msf_4_final’ dataset is the final dataset that was used for analyses.
+
+To illustrate my exploratory data analysis, I created a table and figure with gestational diabetes as the predictor of preterm deliveries. Table 1 summarizes continuous and categorical demographic and health variables among mothers with and without gestational diabetes. There were a total of 11 and 439 with and without gestational diabetes in the study population. Women with gestational diabetes were on average older (28.6 years vs 26.6 years) and had a higher BMI (25.7 vs 23.2) than women without gestational diabetes. The family income and education variables are non-informative in this example because a codebook describing what each discrete category represents is not publicly available online. The variables were kept in the Table because these are potential confounders that one would want to adjust for in adjusted analyses such a binomial generalized linear model. Interestingly, all women with gestational diabetes did not have hypertension while a greater percentage reported a preterm delivery (63.6%)  compared to no preterm delivery (36.4%). Among women with gestational diabetes, 81.8% reported no history of infertility treatment.
+
+To highlight one of the predictor-outcome associations, Figure 1 was created to show the number of preterm deliveries by gestational diabetes in a stacked barplot. Table 1 and Figure 1 show that the percentage of preterm deliveries among women with gestational diabetes (63.6%) was greater than the percentage of preterm deliveries observed among women without gestational diabetes (16.9%). These visualizations indicate that the presence of gestational diabetes may be associated with preterm deliveries. 
+
+Each of the associations of interest are summarized in 2x2 contingency tables. Table 2 shows the observed occurrences in each of the four cells for preterm deliveries and gestational diabetes with column percentages. Similar information is presented in Figure 2 in a Mosaic plot which shows each combination of variables represented by a rectangle. The size of the rectangle is proportional to the number of individuals in that combination compared to the total study population. For instance, the majority of mothers in this study population that do not have gestational diabetes also do not report delivering a baby preterm. Since this association did not meet the expected cell counts assumption needed to run a Chi-squared test of independence,  Fisher’s Exact test was conducted. According to a p-value less than 0.001, we reject the null hypothesis and conclude there is a statistically significant association between gestational diabetes and preterm delivery. The calculated odds ratio from this study population indicates that the odds of preterm delivery among women with gestational diabetes is 8.57 times the odds of preterm delivery among mothers without gestational diabetes (95% CI: 2.12, 40.99). Because of the high variability from the  limited observations of gestational diabetes, the estimated confidence interval is not precise.
+
+Table 3 shows the observed occurrences in each of the four cells for preterm deliveries and infertility treatment with column percentages. Unlike Table 2, there is a greater percentage of women without preterm deliveries (67.9 and 82.9%) than preterm deliveries among mothers with and without infertility treatment.  Nonetheless, the percentage of mothers with a preterm birth is greater among mothers with infertility treatment (32.1%) compared to mothers without infertility treatment (17.1%). The Mosaic Plot in Figure 3 shows that the majority of mothers in this study population do not report either infertility treatment or preterm delivery. Since each of the expected cell counts for infertility treatment and preterm delivery are 5 or above, a Chi-squared test for independence was performed. Based on a p-value of 0.079, we conclude there is no sufficient evidence for an association between infertility treatment and preterm delivery. The estimated odds ratio from this study population indicates that the odds of preterm delivery among mothers with infertility treatment is 2.30 times the odds of preterm delivery among mothers without infertility treatment (95% CI: 0.88, 5.59).
+
+Table 4 shows the observed occurrences in each of the four cells for preterm deliveries and hypertension during pregnancy with column percentages. The majority of mothers without hypertension do not report a preterm delivery (83.3%) while a large but not majority of mothers with hypertension report a preterm delivery (45.0%). The mosaic plot in Figure 4, shows that the majority of mothers in this study population did not deliver a baby preterm and do not have hypertension. Since each of the expected cell counts for hypertension and preterm delivery are not at least 5, a Fisher’s Exact test for independence was performed. Based on a p-value of 0.004, we conclude there is a statistically significant association between hypertension and preterm delivery.  
+
+The estimated odds ratio from this study population indicates that the odds of preterm delivery among mothers with hypertension is 4.05 times the odds of preterm delivery among mothers without hypertension (95% CI: 1.43, 11.20).
+
+# Conclusion
+The purpose of this project was to conduct exploratory analyses using the Mother’s Significant Feature dataset and assess whether gestational diabetes, infertility treatment, and hypertension during pregnancy were associated with preterm deliveries among a study population of 450 mothers from the Mumbai metropolitan region in Maharashtra, India who gave birth between February 2018 to March 2021. Fisher’s Exact and Chi-squared test of independence were performed to identify the associations between the aforementioned pairs of binary variables. Odds ratios and 95% confidence intervals were estimated using the Fisher’s Exact test function in R. 
+The study found increased odds of preterm deliveries for mothers with gestational diabetes, hypertension, and infertility treatment but the latter association was not statistically significant.
+
+In light of the limited occurrences of gestational diabetes, hypertension, and infertility treatment history, I do not think my analysis was successful. Because of the large standard deviations from limited information in the dataset, the confidence intervals were wide. Moreover, my interpretation of the descriptive statistics in Table 1 were limited because there is no online codebook to determine what each of the discrete categories for variables with more than two categories mean. If I had more time, I would check for assumptions and perform adjusted logistic regression models to compare to the crude odds calculated in this project. All odds ratios were relatively high and likely biased upwards by common confounders like mother’s age, education, and income. Given that the counts for many of the categories for common demographic variables such as education and income were small, this analysis would require that I know how each categorical variable is coded to collapse categories.
+
+# References
+1.Himani Deshpande, Leena Ragha. (2021). Mother’s Significant Feature (MSF) Dataset. IEEE Dataport. https://dx.doi.org/10.21227/kq5k-b784
+
+2.India has 1/5th of the world’s preterm babies. (2019, June 13). Retrieved December 12, 2022, from Narayana Health Care website: https://www.narayanahealth.org/blog/india-has-1-5th-of-the-worlds-preterm-babies/
+
+3.Fan, Z., Yang, H., Gao, X., Lintu, H., & Sun, W. (2006). Pregnancy outcome in gestational diabetes. *International Journal of Gynecology & Obstetrics*, 94(1), 12–16. https://doi.org/10.1016/j.ijgo.2006.03.021
+
+
+
+# Appendix: All code, figures, and tables for this project.
+```{r} 
+#install.packages("kableExtra")
+#load libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(boot) 
+
+
+#install.packages("table1")
+require(table1)
+
+library(devtools)
+#install_github("emwozniak/Table1")
+#library(Table1)
+
+
+#import MSF_Dataset_Complete_450 csv file to subset dataset to only the variables needed for this project 
+#main exposure of interest: gestational diabetes 
+#main outcome of interest: preterm deliveries
+#potential confounders I will adjust for
+#other interesting/relevant tvariables for exploratory analyses
+
+msf_original <- read.csv("MSF_Dataset_Complete_450.csv")
+#there are 455 observations and 325 variables in the original complete dataset
+
+
+#Clean the csv file as needed as needed
+#display all variables for the first 6 rows of the dataset
+#head(msf_original)
+
+#subset dataset to the following variables: Mother_UID, Age_of_Mother, BMI, Yrs_of_Marriage, Fertility_Treatment, Education, Family_Income, and Preterm
+
+#notice the file is a bit messy and requires some cleaning
+
+#Also NOTICE that hypertension and gestational diabetes are not identifiable in the 'Complete' dataset. I was unable to find a codesheet that tells me which colums belong to these variables. Since gestational dibaetes is the main exposure I will need to retrieve this variable from a separate csv file (along with hypertesnion) and merge both csv files together. I will do this after cleaning the 'complete' dataset 
+
+#some of the variables span multiple columns to represent different time phases. None of the aforementioned variables I will use in this project span more than one column. I will now clean the dataset as needed to create a wide format dataset with each row representing a single mother and each column representing a single variable. I will ultimately create a tidyverse dataframe to use tidyverse functions
+
+
+#create second dataset to clean
+msf_2 <- msf_original
+
+#rename the column 'X' to 'Mother_UID'
+colnames(msf_2)[colnames(msf_2) == "X"] = "Mother_UID"
+
+#remame the 'X.76' column to 'Preterm'
+colnames(msf_2)[colnames(msf_2) == "X.76"] = "Preterm"
+#table(msf_2$Preterm)
+
+#remame the 'Fertility_Treatment' column to 'Infertility_Treatment'
+colnames(msf_2)[colnames(msf_2) == "Fertility_Treatment"] = "Infertility_Treatment"
+#table(msf_2$Infertility_Treatment)
+
+
+#subset to the following variables only: Mother_UID, Age_Of_Mother, BMI, Yrs_Of_Marriage, Fertility_Treatment, Education, Cigarette, Alcohol, Health.Conscious, Family_Income, and Preterm
+myvars <- c("Mother_UID", "Preterm","Age_Of_Mother", "BMI", "Yrs_Of_Marriage", "Infertility_Treatment", "Education", "Family_Income")
+msf_2 <- msf_2[myvars]
+
+#Remove the first 5 rows
+msf_2 <- msf_2[-c(1:5),]
+#the dataset now has 450 observations and 8 variables. WOOOOHOOOO
+```
+
+```{r}
+#NOW I will load in the MSF_Physical_and_health_Fetaures_450 dataset to retrieve the gestational diabetes and hypertension variables
+msf_diab_hyp <- read.csv("MSF_Physical_and_health_Fetaures_450.csv")
+
+#create dataset to clean
+msf_3 <- msf_diab_hyp
+
+#rename the column 'X' to 'Mother_UID'
+colnames(msf_3)[colnames(msf_3) == "X"] = "Mother_UID"
+
+#rename the column 'X.2' to 'Hypertension'
+colnames(msf_3)[colnames(msf_3) == "X.2"] = "Hypertension"
+
+#rename the column 'X.3' to 'Gest_Diabetes'
+colnames(msf_3)[colnames(msf_3) == "X.3"] = "Gest_Diabetes"
+
+#subset to the following variables only: Mother_UID, Gest_Diabetes, Hypertension 
+myvars2 <- c("Mother_UID", "Gest_Diabetes","Hypertension")
+msf_3 <- msf_3[myvars2]
+
+#Remove the first 5 rows
+msf_3 <- msf_3[-c(1:5),]
+#the dataset now has 450 observations and 3 variables. WOOOOHOOOO
+
+#Merge msf_2 and msf_3 datasets which are both now in tidy format by 'Mother_UID'
+msf_4_final <- full_join(msf_2, msf_3, by = "Mother_UID")
+# the final dataset that will be used for analyses has 450 observations and 10 variables
+```
+
+```{r}
+#Show relevant parts of the datasets before and after data cleaning
+#before
+head(msf_original)
+head(msf_diab_hyp)
+#after
+head(msf_4_final)
+
+
+# Stacked Bar plot of Preterm (binary;outcome) vs Gestational Diabetes (binary;exposure)
+#quick look at both vars
+#table(msf_4_final$Preterm)
+#81 women had a preterm birth; 369 women did not have a preterm birth
+#table(msf_4_final$Gest_Diabetes)
+#11 women had gestational diabetes; 439 women did not have gestational diabetes
+
+#Relabel the Gestational Diabetes, Preterm, Hypertension, and infertility treatment Vars
+msf_4_final$Gest_Diabetes <- ifelse(msf_4_final$Gest_Diabetes=="1", "Yes", "No")
+#check
+#table(msf_4_final$Gest_Diabetes)
+msf_4_final$Preterm <- ifelse(msf_4_final$Preterm=="1", "Yes", "No")
+#table(msf_4_final$Preterm)
+msf_4_final$Hypertension <- ifelse(msf_4_final$Hypertension=="1", "Yes", "No")
+#table(msf_4_final$Hypertension)
+msf_4_final$Infertility_Treatment <- ifelse(msf_4_final$Infertility_Treatment=="1", "Yes", "No")
+table(msf_4_final$Infertility_Treatment)
+
+
+#change the order of levels so that the “yes” category comes first
+#Gestational diabetes
+table(msf_4_final$Gest_Diabetes)
+levels(as.factor(msf_4_final$Gest_Diabetes))
+
+msf_4_final$Gest_Diabetes <- factor(msf_4_final$Gest_Diabetes, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Gest_Diabetes))
+
+#preterm
+table(msf_4_final$Preterm)
+levels(as.factor(msf_4_final$Preterm))
+
+msf_4_final$Preterm <- factor(msf_4_final$Preterm, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Preterm))
+
+#hypertension
+table(msf_4_final$Hypertension)
+levels(as.factor(msf_4_final$Hypertension))
+
+msf_4_final$Hypertension <- factor(msf_4_final$Hypertension, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Hypertension))
+
+#infertility Treatment
+table(msf_4_final$Infertility_Treatment)
+levels(as.factor(msf_4_final$Infertility_Treatment))
+
+msf_4_final$Infertility_Treatment <- factor(msf_4_final$Infertility_Treatment, levels = c("Yes", "No"))
+levels(as.factor(msf_4_final$Infertility_Treatment))
+
+
+# Demographics table; Baseline characteristics of mothers in the analyses
+
+# Stratify by gestational diabetes in the columns and show the data for mother's age (continuous), education, family income, BMI (cont), years of marriage (cont), hypertension, preterm  
+# Please note that the variables for family income and education are categorized as discrete categories but there is not a online codebookto interpret what each category represents : (  These are key demographic variables so I will include them in Table 1 and adjust the logistic reg using the variables as they are for the purposes of this assignment
+
+#turn categorical variables into factor type for table1 function
+msf_4_final$Education <- as.factor(msf_4_final$Education)
+msf_4_final$Family_Income <- as.factor(msf_4_final$Family_Income)
+msf_4_final$Hypertension <- as.factor(msf_4_final$Hypertension)
+msf_4_final$Preterm <- as.factor(msf_4_final$Preterm)
+msf_4_final$Infertility_Treatment <- as.factor(msf_4_final$Infertility_Treatment)
+
+
+table1(~Age_Of_Mother + Education + Family_Income + Yrs_Of_Marriage + BMI + Hypertension + Preterm + Infertility_Treatment|Gest_Diabetes, data=msf_4_final,
+       overall=F, caption= "Table 1. Baseline Characteristics of Mothers in the MSF Dataset (2018-21) Stratified by Gestational Diabetes") 
+#information on what categories for Education and Family Income represent were not available online.
+
+
+stacked_barplot <-ggplot(msf_4_final, aes(x = Gest_Diabetes , fill = Preterm))+
+  geom_bar()+
+  xlab("Gestational Diabetes")+
+  ylab("Count") +
+  ggtitle("Figure 1. Preterm Deliveries By Gestational Diabetes in the MSF Dataset") +
+  theme_classic()
+stacked_barplot
+```
+
+
+```{r}
+#Association tests
+#Preterm vs gestational diabetes 2x2 Contingency table 
+
+table1(~Preterm |Gest_Diabetes, data=msf_4_final,
+       overall=F, caption= "Table 2. Preterm Deliveries vs Gestational Diabetes with column percentages") 
+
+
+table2 <- table(msf_4_final$Preterm, msf_4_final$Gest_Diabetes)
+mosaicplot(table2, color = c("pink", "light green"), xlab ="Preterm Deliveries", ylab = "Gestational Diabetes", main = "Figure 2. Mosaic Plot for Gestational Diabetes vs Preterm Deliveries")
+
+
+# The Chi-square test requires that all cell expected values be at least 5
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met 
+chisq.test(table2)$expected
+#Chi-square test is not appropriate for this association
+
+
+#Run Fisher's Exact Test
+fisher.test(msf_4_final$Gest_Diabetes, msf_4_final$Preterm)
+
+#########################################################
+
+#Preterm vs Infertility Treatment 2x2 Contingency table 
+table1(~Preterm |Infertility_Treatment, data=msf_4_final,
+       overall=F, caption= "Table 3. Preterm Deliveries vs Infertility Treatment with column percentages") 
+
+
+table3 <- table(msf_4_final$Preterm, msf_4_final$Infertility_Treatment)
+mosaicplot(table3, color = c("pink", "light yellow"), xlab ="Preterm Deliveries", ylab = "Infertility Treatment", main = "Figure 3. Mosaic Plot for Infertility Treatment vs Preterm Deliveries")
+
+
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met
+chisq.test(table3)$expected
+#met
+
+#calculate OR and 95% CI using Fisher.test function
+fisher.test(msf_4_final$Infertility_Treatment, msf_4_final$Preterm)$estimate
+fisher.test(table3)
+
+#conduct chi-square test
+chisq.test(table3)
+
+
+####################################################################################################
+
+#Preterm vs Hypertension 2x2 Contingency table 
+table1(~Preterm |Hypertension, data=msf_4_final,
+       overall=F, caption= "Table 4. Preterm Deliveries vs Hypertension with column percentages") 
+
+table4 <- table(msf_4_final$Preterm, msf_4_final$Hypertension)
+mosaicplot(table4, color = c("pink", "lavender"), xlab ="Preterm Deliveries", ylab = "Hypertension", main = "Figure 4. Mosaic Plot for Hypertension vs Preterm Deliveries")
+
+#Assess whether the expected cell counts requirement to conduct a chi-square test is met
+chisq.test(table4)$expected
+#not met
+
+#Run Fisher's Exact Test
+fisher.test(msf_4_final$Hypertension, msf_4_final$Preterm)
+
+```
